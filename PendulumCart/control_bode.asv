@@ -4,9 +4,8 @@ s = tf('s');
 %Control Law
 Kp = -189;
 Kd = -52;
-Ki =  0;
 
-PID_tf = Kp + Kd*s + Ki/s;
+PID_tf = Kp + Kd*s;
 
 %{
 ztheta = 1;
@@ -37,13 +36,8 @@ sys_tf = tf(sys_ss);
 
 %close_loop_tf_theta = PID_tf*sys_tf / (1 + PID_tf*sys_tf)
 close_loop_tf_theta = feedback(PID_tf*sys_tf,1)
-open_loop_tf_theta = PID_tf*sys_tf
 
-[GM,PM] = margin(open_loop_tf_theta);
-[mag,phase,wout] = bode(open_loop_tf_theta);
-
-mag = reshape(mag,[length(mag(1,1,:)),1]);
-phase = reshape(phase,[length(phase(1,1,:)),1]);
+[GM,PM] = margin(close_loop_tf_theta);
 %{
 figure
 bode(sys_tf(3))
@@ -82,9 +76,8 @@ nyquist(close_loop_tf_theta)
 %bode(PID_tf*sys_tf(3))
 title("Nyquist Diagram for \theta with controller")
 
-%figure
-%plot(phase,mag)
-
+figure
+plot()
 %{
 figure
 bode(tf_omega)
