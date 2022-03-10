@@ -1,20 +1,21 @@
 clear
 clc
+close all;
 
 %Load Parameters
 config;
 
 %Initialize Controller
-control_lqr;
+control_bode;
 
 % Initial State
 x0 = [0    % p
       0    % pdot
-      1 % theta
+      0.1 % theta
       0];  %thetadot
 
 % Initialize, Run, and Plot
-tspan = [0 10];
+tspan = [0 50];
 options = odeset('RelTol', 1e-9, 'AbsTol', 1e-9);
 [t,x] = ode45(@pendcart, tspan, x0);
 plot_sim

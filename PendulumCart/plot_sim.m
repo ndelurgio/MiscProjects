@@ -1,5 +1,3 @@
-close all;
-
 figure
 subplot 411
 title("Pendulum-Cart System")

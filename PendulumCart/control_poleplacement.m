@@ -15,4 +15,5 @@ D = zeros(4,1);
 sys_ss = ss(A,B,C,D);
 sys_tf = tf(sys_ss);
 
-bode(sys_ss);
+p = [-1 -1.1 -1.2 -1.3];
+K = place(A,B,p);
