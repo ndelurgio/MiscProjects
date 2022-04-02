@@ -3,16 +3,19 @@ clc
 close all;
 
 %% CONFIG
-t_epoch = datetime('now');
+t_epoch = datetime(2039,1,1);
 t_final = t_epoch + days(2000);
 dt = 86400; % time step in seconds
+tspan = t0:dt:tf; %create time vector for outer for loop
+
+% Spacecraft Trajectory
 
 % Create Enviornment
 [solsys, t0, tf] = initializeEnviornment(t_epoch,t_final);
 
 fn = fieldnames(solsys);
 %% Run Simulation
-tspan = t0:dt:tf; %create time vector for outer for loop
+
 
 %create empty rv vectors for each propogatable object
 for k = 1:numel(fn)
