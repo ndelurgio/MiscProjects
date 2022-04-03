@@ -1,13 +1,11 @@
-function spacecraft = initializeSpacecraft(t_epoch,solsys)
+function spacecraft = initializeSpacecraft(t_epoch,t_launch,tof,solsys)
 spacecraft = struct;
 % Name the Spacecraft
 name = "EEV";
 % Select Starting Planet & Launch Date
 planet0 = 'Earth';
-t_launch = t_epoch + days(10);
 % Select Arrival Planet & Time of Flight
 planetf = 'Mars';
-tof = 141; %days
 % Select Central Body
 centralbody = 'Sun';
 

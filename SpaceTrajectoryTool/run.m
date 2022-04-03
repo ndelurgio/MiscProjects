@@ -4,7 +4,7 @@ close all;
 
 %% CONFIG
 t_epoch = datetime(2039,8,1);
-t_final = t_epoch + days(200);
+t_final = t_epoch + days(500);
 dt = 86400; % time step in seconds
 
 % Create Enviornment
@@ -12,7 +12,18 @@ dt = 86400; % time step in seconds
 tspan = t0:dt:tf; %create time vector for outer for loop
 
 % Spacecraft Trajectory
-spacecraft = initializeSpacecraft(t_epoch,solsys);
+optimize = 1; %1 to run automated search, 0 to plug in speciifc trajectory
+switch(optimize)
+    case 1
+        tof_range = 100:250; %days
+        t_launch_range = t_epoch + days(0:160); %days
+        spacecraft = lambert_optimizer(t_epoch,t_launch_range,tof_range,solsys);
+    case 0
+        tof = 141; %days
+        t_launch = t_epoch + days(10);
+        spacecraft = initializeSpacecraft(t_epoch,t_launch,tof,solsys);
+end
+
 
 fn_solsys = fieldnames(solsys);
 fn_spacecraft = fieldnames(spacecraft);
