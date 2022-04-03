@@ -1,13 +1,21 @@
 m2au = 6.68459e-12; %meters to astrometrical units
 figure('Name','Trajectory Plot')
 hold on;
-Legend = cell(length(1:numel(fn)),1);
-for k = 1:numel(fn)
-    if isfield(solsys.(fn{k}), "rv")
-        plot3(solsys.(fn{k}).rv(1,:)*m2au,solsys.(fn{k}).rv(2,:)*m2au,solsys.(fn{k}).rv(3,:)*m2au,"LineWidth",2);
-        Legend{k} = "\color{white}" + fn{k};
+Legend = cell(length(1:numel(fn_solsys)) + length(1:numel(fn_spacecraft)),1);
+for k = 1:numel(fn_solsys)
+    if isfield(solsys.(fn_solsys{k}), "rv")
+        plot3(solsys.(fn_solsys{k}).rv(1,:)*m2au,solsys.(fn_solsys{k}).rv(2,:)*m2au,solsys.(fn_solsys{k}).rv(3,:)*m2au,"LineWidth",2);
+        Legend{k} = "\color{white}" + fn_solsys{k};
     end
 end
+
+for i = 1:numel(fn_spacecraft)
+    if isfield(spacecraft.(fn_spacecraft{i}), "rv")
+        plot3(spacecraft.(fn_spacecraft{i}).rv(1,:)*m2au,spacecraft.(fn_spacecraft{i}).rv(2,:)*m2au,spacecraft.(fn_spacecraft{i}).rv(3,:)*m2au,"LineWidth",2);
+        Legend{k+i} = "\color{white}" + fn_spacecraft{i};
+    end
+end
+
 Legend = Legend(~cellfun(@isempty,Legend));
 [X, Y, Z] = sphere;
 surf(0.00465*X,0.00465*Y,0.00465*Z,'FaceColor','y');

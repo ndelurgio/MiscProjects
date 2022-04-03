@@ -3,56 +3,91 @@ clc
 close all;
 
 %% CONFIG
-t_epoch = datetime(2039,1,1);
-t_final = t_epoch + days(2000);
+t_epoch = datetime(2039,8,1);
+t_final = t_epoch + days(500);
 dt = 86400; % time step in seconds
-tspan = t0:dt:tf; %create time vector for outer for loop
-
-% Spacecraft Trajectory
 
 % Create Enviornment
 [solsys, t0, tf] = initializeEnviornment(t_epoch,t_final);
+tspan = t0:dt:tf; %create time vector for outer for loop
 
-fn = fieldnames(solsys);
+% Spacecraft Trajectory
+spacecraft = initializeSpacecraft(t_epoch,solsys);
+
+fn_solsys = fieldnames(solsys);
+fn_spacecraft = fieldnames(spacecraft);
 %% Run Simulation
 
 
 %create empty rv vectors for each propogatable object
-for k = 1:numel(fn)
-    if isfield(solsys.(fn{k}), "rv0")
-        solsys.(fn{k}).rv = zeros(6,length(tspan));
-        solsys.(fn{k}).rv(:,1) = solsys.(fn{k}).rv0;
+for k = 1:numel(fn_solsys)
+    if isfield(solsys.(fn_solsys{k}), "rv0")
+        solsys.(fn_solsys{k}).rv = zeros(6,length(tspan));
+        solsys.(fn_solsys{k}).rv(:,1) = solsys.(fn_solsys{k}).rv0;
     end
-    if isfield(solsys.(fn{k}), "oe0")
-        solsys.(fn{k}).oe = zeros(6,length(tspan));
-        solsys.(fn{k}).oe(:,1) = solsys.(fn{k}).oe0;
+    if isfield(solsys.(fn_solsys{k}), "oe0")
+        solsys.(fn_solsys{k}).oe = zeros(6,length(tspan));
+        solsys.(fn_solsys{k}).oe(:,1) = solsys.(fn_solsys{k}).oe0;
+    end
+end
+
+for k = 1:numel(fn_spacecraft)
+    stop_time = spacecraft.(fn_spacecraft{k}).tof;
+    spacecraft.(fn_spacecraft{k}).tspan = 0:dt:stop_time;
+    if isfield(spacecraft.(fn_spacecraft{k}), "rv0")
+        spacecraft.(fn_spacecraft{k}).rv = zeros(6,length(spacecraft.(fn_spacecraft{k}).tspan));
+        spacecraft.(fn_spacecraft{k}).rv(:,1) = spacecraft.(fn_spacecraft{k}).rv0;
+    end
+    if isfield(spacecraft.(fn_spacecraft{k}), "oe0")
+        spacecraft.(fn_spacecraft{k}).oe = zeros(6,length(spacecraft.(fn_spacecraft{k}).tspan));
+        spacecraft.(fn_spacecraft{k}).oe(:,1) = spacecraft.(fn_spacecraft{k}).oe0;
     end
 end
 
 % propogate for each time step
 for i = 1:length(tspan)
-    for k = 1:numel(fn)
-        % If a solar system field has orbital elements, propogate.
+    %First Propogate Natural Bodies
+    for k = 1:numel(fn_solsys)
+        % If a solar system field has a state, propogate.
         % Otherwise, do nothing.
-        if isfield(solsys.(fn{k}), "oe0")
+        if isfield(solsys.(fn_solsys{k}), "rv0")
             %Extract needed elements from fields
-            oe0 = solsys.(fn{k}).oe0;
-            nu0 = oe0(6);
-            e = oe0(2);
-            a = oe0(1);
-            %Compute true anomoly at timestep i
-            nui = orbitPropogate_analytic(nu0,e,solsys.Sun.mu,a,tspan(i));
-            oei = [oe0(1:5); nui];
-            solsys.(fn{k}).oe(:,i) = oei;
-            %Convert to rv state vector
-            rvi = oe2rv(oei,solsys.Sun.mu);
-            solsys.(fn{k}).rv(:,i) = rvi;
-        else
-            continue;
+            rv0 = solsys.(fn_solsys{k}).rv0;
+            rvi = propogate2body(rv0,solsys.Sun.mu,tspan(i));
+            solsys.(fn_solsys{k}).rv(:,i) = rvi;
+            if isfield(solsys.(fn_solsys{k}), "oe")
+                solsys.(fn_solsys{k}).oe(:,i) = rv2oe(rvi,solsys.Sun.mu);
+            end
         end
     end
+    % Second, Propogate all spacecraft in the simulation
+%     for k = 1:numel(fn_spacecraft)
+%         if isfield(spacecraft.(fn_spacecraft{k}), "rv0")
+%             rv0 = spacecraft.(fn_spacecraft{k}).rv0;
+%             rvi = propogate2body(rv0,solsys.Sun.mu,tspan(i));
+%             spacecraft.(fn_spacecraft{k}).rv(:,i) = rvi;
+%             if isfield(spacecraft.(fn_spacecraft{k}),"oe")
+%                 spacecraft.(fn_spacecraft{k}).oe(:,i) = rv2oe(rvi,solsys.Sun.mu);
+%             end
+%         end
+%     end
 end
 
+% Second, Propogate all spacecraft in the simulation
+for k = 1:numel(fn_spacecraft)
+    %start_time = spacecraft.(fn_spacecraft{k}).t_launch_rel;
+    stop_time = spacecraft.(fn_spacecraft{k}).tof;
+    tspan_sc = spacecraft.(fn_spacecraft{k}).tspan;
+    for i = 1:length(tspan_sc)
+        rv0 = spacecraft.(fn_spacecraft{k}).rv0;
+        rvi = propogate2body(rv0,solsys.Sun.mu,tspan_sc(i));
+        spacecraft.(fn_spacecraft{k}).rv(:,i) = rvi;
+        if isfield(spacecraft.(fn_spacecraft{k}),"oe")
+                spacecraft.(fn_spacecraft{k}).oe(:,i) = rv2oe(rvi,solsys.Sun.mu);
+        end
+    end
+    %spacecraft.(fn_spacecraft{k}).rv = spacecraft.(fn_spacecraft{k}).rv(spacecraft.(fn_spacecraft{k}).rv ~= 0);
+end
 %% ANALYSIS
 
 % Plot results
