@@ -1,4 +1,4 @@
-function [solsys,t0,tf] = initializeEnviornment(t_epoch,t_final)
+function [solsys,t0,tf] = initializeEnviornment_FullSolarSys(t_epoch,t_final)
 
 % CREATE SOLAR SYSTEM USING SPICE (Kernals:
 % https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/aa_summaries.txt)

@@ -4,11 +4,11 @@ close all;
 
 %% CONFIG
 t_epoch = datetime(2039,8,1);
-t_final = t_epoch + days(500);
+t_final = t_epoch + days(200);
 dt = 86400; % time step in seconds
 
 % Create Enviornment
-[solsys, t0, tf] = initializeEnviornment(t_epoch,t_final);
+[solsys, t0, tf] = initializeEnviornment_InnerPlanets(t_epoch,t_final);
 tspan = t0:dt:tf; %create time vector for outer for loop
 
 % Spacecraft Trajectory
