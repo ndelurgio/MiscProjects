@@ -1,11 +1,11 @@
-function spacecraft = lambert_optimizer(t_epoch,t_launch,tof,solsys)
+function spacecraft = lambert_optimizer(t_epoch,t_launch,tof,solsys,planet0,planetf,centralbody,name)
 spacecraft = struct;
 
 %Run a search of all queried lambert problems. spacecraft stuct stores the
 %optimal dv solution to return.
 for i = 1:length(t_launch)
     for j = 1:length(tof)
-        sc_sol = initializeSpacecraft(t_epoch,t_launch(i),tof(j),solsys);
+        sc_sol = initializeSpacecraft(t_epoch,t_launch(i),tof(j),solsys,planet0,planetf,centralbody,name);
         if i == 1 && j == 1
             spacecraft = sc_sol;
             spacecraft.EEV.dv_total = 1e9;

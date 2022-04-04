@@ -30,5 +30,30 @@ solsys.Venus.oe0 = rv2oe(solsys.Venus.rv0,solsys.Sun.mu);
 solsys.Earth.oe0 = rv2oe(solsys.Earth.rv0,solsys.Sun.mu);
 solsys.Mars.oe0 = rv2oe(solsys.Mars.rv0,solsys.Sun.mu);
 
+% Define Planetary Masses (kg)
+solsys.Sun.mass = 1.9891e30;
+solsys.Mercury.mass = 3.30103e23;
+solsys.Venus.mass = 4.13804e24;
+solsys.Earth.mass = 5.972e24;
+solsys.Mars.mass = 6.42736e23;
+
+solsys.Sun.mu = 1.327124400189e20;
+solsys.Mercury.mu = 2.20329e13;
+solsys.Venus.mu = 3.248599e14;
+solsys.Earth.mu = 3.9860044188e14;
+solsys.Mars.mu = 4.2828372e13;
+
+%Define planet sizes (only for graphical purposes currently)
+solsys.Sun.radius = 695508e3;
+solsys.Mercury.radius = 2439e3;
+solsys.Venus.radius = 6052e3;
+solsys.Earth.radius = 6371e3;
+solsys.Mars.radius = 3389.5e3;
+
+% Define Central Body
+solsys.Mercury.central_body = 'Sun';
+solsys.Venus.central_body = 'Sun';
+solsys.Earth.central_body = 'Sun';
+solsys.Mars.central_body = 'Sun';
 
 end

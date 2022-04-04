@@ -1,14 +1,5 @@
-function spacecraft = initializeSpacecraft(t_epoch,t_launch,tof,solsys)
+function spacecraft = initializeSpacecraft(t_epoch,t_launch,tof,solsys,planet0,planetf,centralbody,name)
 spacecraft = struct;
-% Name the Spacecraft
-name = "EEV";
-% Select Starting Planet & Launch Date
-planet0 = 'Earth';
-% Select Arrival Planet & Time of Flight
-planetf = 'Mars';
-% Select Central Body
-centralbody = 'Sun';
-
 
 if isfield(solsys.(planet0), "rv0") && isfield(solsys.(planetf), "rv0") && isfield(solsys.(centralbody),"mu")
     %Compute inital position

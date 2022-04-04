@@ -3,16 +3,27 @@ clc
 close all;
 
 %% CONFIG
-t_epoch = datetime(2039,1,1);
-t_final = t_epoch + days(200);
+t_epoch = datetime(2039,8,1);
+t_final = t_epoch + days(500);
 dt = 86400; % time step in seconds
 
 % Create Enviornment
-[solsys, t0, tf] = initializeEnviornment(t_epoch,t_final);
+[solsys, t0, tf] = initializeEnviornment_InnerPlanets(t_epoch,t_final);
 tspan = t0:dt:tf; %create time vector for outer for loop
 
 % Spacecraft Trajectory
-spacecraftTraj;
+optimize = 1; %1 to run automated search, 0 to plug in speciifc trajectory
+switch(optimize)
+    case 1
+        tof_range = 100:250; %days
+        t_launch_range = t_epoch + days(0:160); %days
+        spacecraft = lambert_optimizer(t_epoch,t_launch_range,tof_range,solsys);
+    case 0
+        tof = 141; %days
+        t_launch = t_epoch + days(10);
+        spacecraft = initializeSpacecraft(t_epoch,t_launch,tof,solsys);
+end
+
 
 fn_solsys = fieldnames(solsys);
 fn_spacecraft = fieldnames(spacecraft);
@@ -28,6 +39,19 @@ for k = 1:numel(fn_solsys)
     if isfield(solsys.(fn_solsys{k}), "oe0")
         solsys.(fn_solsys{k}).oe = zeros(6,length(tspan));
         solsys.(fn_solsys{k}).oe(:,1) = solsys.(fn_solsys{k}).oe0;
+    end
+end
+
+for k = 1:numel(fn_spacecraft)
+    stop_time = spacecraft.(fn_spacecraft{k}).tof;
+    spacecraft.(fn_spacecraft{k}).tspan = 0:dt:stop_time;
+    if isfield(spacecraft.(fn_spacecraft{k}), "rv0")
+        spacecraft.(fn_spacecraft{k}).rv = zeros(6,length(spacecraft.(fn_spacecraft{k}).tspan));
+        spacecraft.(fn_spacecraft{k}).rv(:,1) = spacecraft.(fn_spacecraft{k}).rv0;
+    end
+    if isfield(spacecraft.(fn_spacecraft{k}), "oe0")
+        spacecraft.(fn_spacecraft{k}).oe = zeros(6,length(spacecraft.(fn_spacecraft{k}).tspan));
+        spacecraft.(fn_spacecraft{k}).oe(:,1) = spacecraft.(fn_spacecraft{k}).oe0;
     end
 end
 
@@ -47,17 +71,23 @@ for i = 1:length(tspan)
             end
         end
     end
-    % Second, Propogate all spacecraft in the simulation
-    for k = 1:numel(fn_spacecraft)
-        if isfield(spacecraft.(fn_spacecraft{k}), "rv0")
-            rv0 = spacecraft.(fn_spacecraft{k}).rv0;
-            rvi = propogate2body(rv0,solsys.Sun.mu,tspan(i));
-            spacecraft.(fn_spacecraft{k}).rv(:,i) = rvi;
-            if isfield(spacecraft.(fn_spacecraft{k}))
-        end
-    end
 end
 
+% Second, Propogate all spacecraft in the simulation
+for k = 1:numel(fn_spacecraft)
+    %start_time = spacecraft.(fn_spacecraft{k}).t_launch_rel;
+    stop_time = spacecraft.(fn_spacecraft{k}).tof;
+    tspan_sc = spacecraft.(fn_spacecraft{k}).tspan;
+    for i = 1:length(tspan_sc)
+        rv0 = spacecraft.(fn_spacecraft{k}).rv0;
+        rvi = propogate2body(rv0,solsys.Sun.mu,tspan_sc(i));
+        spacecraft.(fn_spacecraft{k}).rv(:,i) = rvi;
+        if isfield(spacecraft.(fn_spacecraft{k}),"oe")
+                spacecraft.(fn_spacecraft{k}).oe(:,i) = rv2oe(rvi,solsys.Sun.mu);
+        end
+    end
+    %spacecraft.(fn_spacecraft{k}).rv = spacecraft.(fn_spacecraft{k}).rv(spacecraft.(fn_spacecraft{k}).rv ~= 0);
+end
 %% ANALYSIS
 
 % Plot results
